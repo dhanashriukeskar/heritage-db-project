@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="page-header text-center">
+  <div class="container">
+    <h1><i class="fas fa-plus-circle me-3"></i>Add New Heritage Site</h1>
+    <p>Discovered a new heritage site? Share it with the world!</p>
+  </div>
+</section>
+
+<section class="sites-section">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-7">
+        <div class="detail-card">
+          <h4 class="detail-title">
+            <i class="fas fa-monument me-2"></i>Site Information
+          </h4>
+          <form action="/contribute" method="POST">
+
+            <p style="color:#f0a500;font-size:0.85rem;margin-bottom:16px">
+              <i class="fas fa-info-circle me-1"></i>
+              Your submission will be reviewed by our admins before publishing.
+            </p>
+
+            <!-- Your Details -->
+            <h6 style="color:rgba(255,255,255,0.5);font-size:0.8rem;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px">Your Details</h6>
+            <div class="row g-3 mb-4">
+              <div class="col-md-6">
+                <label class="form-label-custom">First Name</label>
+                <input type="text" name="firstname" class="form-input"
+                  placeholder="Your first name" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label-custom">Last Name</label>
+                <input type="text" name="lastname" class="form-input"
+                  placeholder="Your last name" required>
+              </div>
+              <div class="col-md-12">
+                <label class="form-label-custom">Email</label>
+                <input type="email" name="email" class="form-input"
+                  placeholder="Your email address" required>
+              </div>
+            </div>
+
+            <!-- Site Details -->
+            <h6 style="color:rgba(255,255,255,0.5);font-size:0.8rem;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px">Heritage Site Details</h6>
+            <div class="row g-3 mb-4">
+              <div class="col-md-12">
+                <label class="form-label-custom">Site Name</label>
+                <input type="text" name="site_name" class="form-input"
+                  placeholder="Name of the heritage site" required>
+              </div>
+              <div class="col-md-12">
+                <label class="form-label-custom">Description</label>
+                <textarea name="description" class="form-input"
+                  placeholder="Describe the heritage site in detail..."
+                  rows="4" required></textarea>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label-custom">Historical Period</label>
+                <input type="text" name="historical_period" class="form-input"
+                  placeholder="e.g. Mughal Period (1600 AD)" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label-custom">UNESCO Status</label>
+                <select name="unesco_status" class="form-input" required>
+                  <option value="">Select Status</option>
+                  <option value="UNESCO World Heritage">UNESCO World Heritage</option>
+                  <option value="UNESCO Tentative List">UNESCO Tentative List</option>
+                  <option value="State Heritage">State Heritage</option>
+                  <option value="Local Heritage">Local Heritage</option>
+                  <option value="Unknown">Unknown</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Location Details -->
+            <h6 style="color:rgba(255,255,255,0.5);font-size:0.8rem;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px">Location Details</h6>
+            <div class="row g-3 mb-4">
+              <div class="col-md-6">
+                <label class="form-label-custom">City</label>
+                <input type="text" name="city" class="form-input"
+                  placeholder="City" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label-custom">Area</label>
+                <input type="text" name="area" class="form-input"
+                  placeholder="Area or locality">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label-custom">District</label>
+                <input type="text" name="district" class="form-input"
+                  placeholder="District" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label-custom">State</label>
+                <input type="text" name="state" class="form-input"
+                  placeholder="State" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label-custom">Pincode</label>
+                <input type="text" name="pincode" class="form-input"
+                  placeholder="Pincode">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label-custom">Image URL (optional)</label>
+                <input type="text" name="image_url" class="form-input"
+                  placeholder="Paste image URL if available">
+              </div>
+            </div>
+
+            <button type="submit" class="btn-submit">
+              <i class="fas fa-paper-plane me-2"></i>Submit for Review
+            </button>
+
+          </form>
+        </div>
+      </div>
+
+      <!-- Side Info -->
+      <div class="col-md-3">
+        <div class="detail-card mb-4">
+          <h4 class="detail-title">
+            <i class="fas fa-list-check me-2"></i>How it works
+          </h4>
+          <div class="review-item">
+            <div class="review-stars" style="font-size:1.2rem">1</div>
+            <p class="detail-text">Fill the form with site details</p>
+          </div>
+          <div class="review-item">
+            <div class="review-stars" style="font-size:1.2rem">2</div>
+            <p class="detail-text">Submit for admin review</p>
+          </div>
+          <div class="review-item">
+            <div class="review-stars" style="font-size:1.2rem">3</div>
+            <p class="detail-text">Admin verifies the information</p>
+          </div>
+          <div class="review-item">
+            <div class="review-stars" style="font-size:1.2rem">4</div>
+            <p class="detail-text">Site gets published for everyone!</p>
+          </div>
+        </div>
+
+        <div class="detail-card">
+          <h4 class="detail-title">
+            <i class="fas fa-shield-alt me-2"></i>Guidelines
+          </h4>
+          <div class="location-item"><span>Provide accurate info</span></div>
+          <div class="location-item"><span>No duplicate entries</span></div>
+          <div class="location-item"><span>Include proper location</span></div>
+          <div class="location-item"><span>Valid image URLs only</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="hero-section">
+  <div class="hero-overlay"></div>
+  <div class="container hero-content text-center">
+    <span class="hero-badge">Heritage Management System</span>
+    <h1 class="hero-title">Discover & Manage<br>India's Heritage</h1>
+    <p class="hero-subtitle">
+      A comprehensive database management system for preserving,
+      exploring and managing India's architectural marvels and cultural treasures.
+    </p>
+    <div class="hero-buttons">
+      <a href="/sites" class="btn btn-hero-primary me-3">
+        <i class="fas fa-monument me-2"></i>Explore Sites
+      </a>
+      <a href="/contribute" class="btn btn-hero-outline">
+        <i class="fas fa-plus me-2"></i>Add Heritage Site
+      </a>
+    </div>
+  </div>
+
+  <!-- Live Counters -->
+  <div class="counter-bar">
+    <div class="container">
+      <div class="row g-3 justify-content-center">
+        <div class="col counter-item">
+          <i class="fas fa-monument"></i>
+          <div class="counter-num">{{ site_count }}</div>
+          <div class="counter-label">Heritage Sites</div>
+        </div>
+        <div class="col counter-item">
+          <i class="fas fa-map-marker-alt"></i>
+          <div class="counter-num">{{ location_count }}</div>
+          <div class="counter-label">Locations</div>
+        </div>
+        <div class="col counter-item">
+          <i class="fas fa-users"></i>
+          <div class="counter-num">{{ visitor_count }}</div>
+          <div class="counter-label">Visitors</div>
+        </div>
+        <div class="col counter-item">
+          <i class="fas fa-star"></i>
+          <div class="counter-num">{{ review_count }}</div>
+          <div class="counter-label">Reviews</div>
+        </div>
+        <div class="col counter-item">
+          <i class="fas fa-hands-helping"></i>
+          <div class="counter-num">{{ contribution_count }}</div>
+          <div class="counter-label">Contributions</div>
+        </div>
+        <div class="col counter-item">
+          <i class="fas fa-user-shield"></i>
+          <div class="counter-num">{{ admin_count }}</div>
+          <div class="counter-label">Admins</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- System Modules -->
+<section class="modules-section">
+  <div class="container">
+    <h2 class="section-title text-center">System Modules</h2>
+    <p class="section-subtitle text-center">Navigate to any entity in the heritage database</p>
+    <div class="row g-4 mt-3">
+      <div class="col-md-3 col-6">
+        <a href="/sites" class="module-card">
+          <div class="module-icon"><i class="fas fa-monument"></i></div>
+          <div class="module-name">Heritage Sites</div>
+          <div class="module-desc">Browse & manage all heritage sites</div>
+          <div class="module-count">{{ site_count }}</div>
+        </a>
+      </div>
+      <div class="col-md-3 col-6">
+        <a href="/locations" class="module-card">
+          <div class="module-icon" style="color:#1abc9c"><i class="fas fa-map-marker-alt"></i></div>
+          <div class="module-name">Locations</div>
+          <div class="module-desc">Manage location records</div>
+          <div class="module-count">{{ location_count }}</div>
+        </a>
+      </div>
+      <div class="col-md-3 col-6">
+        <a href="/architecture" class="module-card">
+          <div class="module-icon" style="color:#9b59b6"><i class="fas fa-paint-brush"></i></div>
+          <div class="module-name">Architecture</div>
+          <div class="module-desc">Styles & dynasty records</div>
+          <div class="module-count">{{ architecture_count }}</div>
+        </a>
+      </div>
+      <div class="col-md-3 col-6">
+        <a href="/visitors" class="module-card">
+          <div class="module-icon" style="color:#3498db"><i class="fas fa-users"></i></div>
+          <div class="module-name">Visitors</div>
+          <div class="module-desc">Registered visitor management</div>
+          <div class="module-count">{{ visitor_count }}</div>
+        </a>
+      </div>
+      <div class="col-md-3 col-6">
+        <a href="/reviews" class="module-card">
+          <div class="module-icon" style="color:#f39c12"><i class="fas fa-star"></i></div>
+          <div class="module-name">Reviews</div>
+          <div class="module-desc">Visitor ratings & feedback</div>
+          <div class="module-count">{{ review_count }}</div>
+        </a>
+      </div>
+      <div class="col-md-3 col-6">
+        <a href="/contributions" class="module-card">
+          <div class="module-icon" style="color:#e67e22"><i class="fas fa-hands-helping"></i></div>
+          <div class="module-name">Contributions</div>
+          <div class="module-desc">Community submissions</div>
+          <div class="module-count">{{ contribution_count }}</div>
+        </a>
+      </div>
+      <div class="col-md-3 col-6">
+        <a href="/gallery" class="module-card">
+          <div class="module-icon" style="color:#e74c3c"><i class="fas fa-images"></i></div>
+          <div class="module-name">Image Gallery</div>
+          <div class="module-desc">Heritage site photographs</div>
+          <div class="module-count">{{ gallery_count }}</div>
+        </a>
+      </div>
+      <div class="col-md-3 col-6">
+        <a href="/admins" class="module-card">
+          <div class="module-icon" style="color:#c0392b"><i class="fas fa-user-shield"></i></div>
+          <div class="module-name">Admins</div>
+          <div class="module-desc">Site administrator records</div>
+          <div class="module-count">{{ admin_count }}</div>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

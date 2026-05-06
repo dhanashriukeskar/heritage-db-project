@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="page-header text-center">
+  <div class="container">
+    <h1>{{ site[1] }}</h1>
+    <p><i class="fas fa-map-marker-alt me-1"></i>{{ site[6] }}, {{ site[7] }}</p>
+  </div>
+</section>
+
+<section class="sites-section">
+  <div class="container">
+    <div class="row g-4">
+
+      <!-- Left Column -->
+      <div class="col-md-8">
+
+        <!-- About -->
+        <div class="detail-card mb-4">
+          <h4 class="detail-title">
+            <i class="fas fa-info-circle me-2"></i>About this Site
+          </h4>
+          <p class="detail-text">{{ site[2] }}</p>
+          <div class="detail-tags mt-3">
+            <span class="detail-tag">
+              <i class="fas fa-clock me-1"></i>{{ site[3] }}
+            </span>
+            <span class="detail-tag unesco">
+              <i class="fas fa-globe me-1"></i>{{ site[4] }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Architecture -->
+        {% if architecture %}
+        <div class="detail-card mb-4">
+          <h4 class="detail-title">
+            <i class="fas fa-paint-brush me-2"></i>Architecture Style
+          </h4>
+          <h5 class="detail-subtitle">{{ architecture[1] }}</h5>
+          <p class="detail-text">{{ architecture[3] }}</p>
+          <span class="detail-tag">
+            <i class="fas fa-crown me-1"></i>Dynasty: {{ architecture[2] }}
+          </span>
+        </div>
+        {% endif %}
+
+        <!-- Image Gallery -->
+        {% if images %}
+        <div class="detail-card mb-4">
+          <h4 class="detail-title">
+            <i class="fas fa-images me-2"></i>Image Gallery
+          </h4>
+          <div class="row g-3 mt-1">
+            {% for img in images %}
+            <div class="col-md-4">
+              <img src="{{ img[1] }}" class="gallery-img"
+                alt="Heritage Image"
+                onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Taj_Mahal_%28Edited%29.jpeg/400px-Taj_Mahal_%28Edited%29.jpeg'">
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Reviews -->
+        <div class="detail-card mb-4">
+          <h4 class="detail-title">
+            <i class="fas fa-star me-2"></i>Visitor Reviews
+          </h4>
+          {% if reviews %}
+            {% for review in reviews %}
+            <div class="review-item">
+              <div class="review-header">
+                <span class="review-name">
+                  {{ review[6] }} {{ review[7] }}
+                </span>
+                <span class="review-date">{{ review[3] }}</span>
+              </div>
+              <div class="review-stars">
+                {% for i in range(review[1]) %}★{% endfor %}
+                {% for i in range(5 - review[1]) %}☆{% endfor %}
+              </div>
+              <p class="review-text">{{ review[2] }}</p>
+            </div>
+            {% endfor %}
+          {% else %}
+            <p class="detail-text">No reviews yet. Be the first to review!</p>
+          {% endif %}
+        </div>
+
+      </div>
+
+      <!-- Right Column -->
+      <div class="col-md-4">
+
+        <!-- Location Details -->
+        <div class="detail-card mb-4">
+          <h4 class="detail-title">
+            <i class="fas fa-map-marker-alt me-2"></i>Location Details
+          </h4>
+          <div class="location-item">
+            <span>Area</span><span>{{ site[8] }}</span>
+          </div>
+          <div class="location-item">
+            <span>City</span><span>{{ site[6] }}</span>
+          </div>
+          <div class="location-item">
+            <span>District</span><span>{{ site[9] }}</span>
+          </div>
+          <div class="location-item">
+            <span>State</span><span>{{ site[7] }}</span>
+          </div>
+          <div class="location-item">
+            <span>Pincode</span><span>{{ site[10] }}</span>
+          </div>
+        </div>
+
+        <!-- Write Review -->
+        <div class="detail-card mb-4">
+          <h4 class="detail-title">
+            <i class="fas fa-pen me-2"></i>Write a Review
+          </h4>
+          <form action="/submit_review/{{ site[0] }}" method="POST">
+            <div class="mb-3">
+              <input type="text" name="firstname"
+                class="form-input"
+                placeholder="Your first name" required>
+            </div>
+            <div class="mb-3">
+              <input type="text" name="lastname"
+                class="form-input"
+                placeholder="Your last name" required>
+            </div>
+            <div class="mb-3">
+              <input type="email" name="email"
+                class="form-input"
+                placeholder="Email" required>
+            </div>
+            <div class="mb-3">
+              <select name="rating" class="form-input" required>
+                <option value="">Select Rating</option>
+                <option value="5">★★★★★ Excellent</option>
+                <option value="4">★★★★ Good</option>
+                <option value="3">★★★ Average</option>
+                <option value="2">★★ Poor</option>
+                <option value="1">★ Terrible</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <textarea name="review_text"
+                class="form-input"
+                placeholder="Share your experience..."
+                rows="4" required></textarea>
+            </div>
+            <button type="submit" class="btn-submit">
+              <i class="fas fa-paper-plane me-2"></i>Submit Review
+            </button>
+          </form>
+        </div>
+
+        <!-- Contribute Info -->
+        <div class="detail-card">
+          <h4 class="detail-title">
+            <i class="fas fa-hands-helping me-2"></i>Contribute Information
+          </h4>
+          <form action="/contribute_info/{{ site[0] }}" method="POST">
+            <div class="mb-3">
+              <input type="text" name="name"
+                class="form-input"
+                placeholder="Your name" required>
+            </div>
+            <div class="mb-3">
+              <input type="email" name="email"
+                class="form-input"
+                placeholder="Email" required>
+            </div>
+            <div class="mb-3">
+              <textarea name="information"
+                class="form-input"
+                placeholder="Additional details about this site..."
+                rows="4" required></textarea>
+            </div>
+            <button type="submit" class="btn-submit">
+              <i class="fas fa-upload me-2"></i>Submit Contribution
+            </button>
+            <p class="contribute-note">
+              Reviewed by admins before publishing.
+            </p>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

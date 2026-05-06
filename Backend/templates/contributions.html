@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-header text-center">
+  <div class="container">
+    <h1><i class="fas fa-hands-helping me-3"></i>Contributions</h1>
+    <p>Community submitted information about heritage sites</p>
+  </div>
+</section>
+<section class="sites-section">
+  <div class="container">
+
+    <div class="table-wrapper">
+      <table class="heritage-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Visitor</th>
+            <th>Site</th>
+            <th>Status</th>
+            <th>Submitted</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in contributions %}
+          <tr>
+            <td>{{ c[0] }}</td>
+            <td>{{ c[4] }} {{ c[5] }}</td>
+            <td>{{ c[6] if c[6] else '—' }}</td>
+            <td>
+              <span class="status-badge
+                {% if c[1] == 'Approved' %}status-approved
+                {% elif c[1] == 'Rejected' %}status-rejected
+                {% else %}status-pending{% endif %}">
+                {{ c[1] }}
+              </span>
+            </td>
+            <td>{{ c[2] }}</td>
+            <td>
+              {% if c[1] == 'Pending' %}
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+
+                {% if c[7] is not none %}
+                <button onclick="openModal({{ c[0] }})"
+                  style="background:#f0a500;color:#0d0d1a;border:none;
+                         padding:6px 14px;border-radius:6px;
+                         font-weight:600;cursor:pointer">
+                  <i class="fas fa-eye me-1"></i>View
+                </button>
+                {% endif %}
+
+                {% if session.get('role') == 'admin' %}
+                <form method="POST"
+                      action="{{ url_for('approve_contribution', contribution_id=c[0]) }}">
+                  <button type="submit"
+                    style="background:#28a745;color:#fff;border:none;
+                           padding:6px 14px;border-radius:6px;
+                           font-weight:600;cursor:pointer">
+                    <i class="fas fa-check me-1"></i>Approve
+                  </button>
+                </form>
+                <form method="POST"
+                      action="{{ url_for('reject_contribution', contribution_id=c[0]) }}">
+                  <button type="submit"
+                    style="background:#dc3545;color:#fff;border:none;
+                           padding:6px 14px;border-radius:6px;
+                           font-weight:600;cursor:pointer">
+                    <i class="fas fa-times me-1"></i>Reject
+                  </button>
+                </form>
+                {% else %}
+                <span style="color:#888;font-size:0.85rem">
+                  Awaiting admin review
+                </span>
+                {% endif %}
+
+              </div>
+              {% elif c[1] == 'Approved' %}
+              <span style="color:#28a745;font-weight:600">
+                <i class="fas fa-check-circle"></i> Done
+              </span>
+              {% else %}
+              <span style="color:#dc3545;font-weight:600">
+                <i class="fas fa-times-circle"></i> Rejected
+              </span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ── Modal Overlay ───────────────────────────────────────── -->
+<div id="site-modal"
+     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);
+            z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#12172a;border:1px solid rgba(240,165,0,0.3);
+              border-radius:20px;padding:36px 40px;width:600px;max-width:95vw;
+              max-height:85vh;overflow-y:auto;position:relative;
+              box-shadow:0 30px 80px rgba(0,0,0,0.6);">
+
+    <button onclick="closeModal()"
+      style="position:absolute;top:16px;right:20px;background:none;
+             border:none;color:#888;font-size:1.4rem;cursor:pointer;
+             transition:color 0.2s;"
+      onmouseover="this.style.color='#f0a500'"
+      onmouseout="this.style.color='#888'">✕</button>
+
+    <h3 style="color:#f0a500;font-size:1.2rem;font-weight:800;margin-bottom:24px;">
+      <i class="fas fa-monument me-2"></i>Pending Site Details
+    </h3>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+      <div>
+        <div style="color:#666;font-size:0.72rem;text-transform:uppercase;
+                    letter-spacing:1px;margin-bottom:4px;">Site Name</div>
+        <div id="m-name" style="color:#fff;font-weight:600;font-size:1rem;"></div>
+      </div>
+      <div>
+        <div style="color:#666;font-size:0.72rem;text-transform:uppercase;
+                    letter-spacing:1px;margin-bottom:4px;">UNESCO Status</div>
+        <div id="m-unesco" style="color:#f0a500;font-weight:600;"></div>
+      </div>
+      <div>
+        <div style="color:#666;font-size:0.72rem;text-transform:uppercase;
+                    letter-spacing:1px;margin-bottom:4px;">Historical Period</div>
+        <div id="m-period" style="color:#ccc;"></div>
+      </div>
+      <div>
+        <div style="color:#666;font-size:0.72rem;text-transform:uppercase;
+                    letter-spacing:1px;margin-bottom:4px;">Submitted By</div>
+        <div id="m-by" style="color:#ccc;"></div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px;">
+      <div style="color:#666;font-size:0.72rem;text-transform:uppercase;
+                  letter-spacing:1px;margin-bottom:4px;">Description</div>
+      <div id="m-desc"
+           style="color:#bbb;font-size:0.9rem;line-height:1.6;
+                  background:rgba(255,255,255,0.03);
+                  border:1px solid rgba(255,255,255,0.07);
+                  border-radius:8px;padding:12px;"></div>
+    </div>
+
+    <div style="margin-bottom:16px;">
+      <div style="color:#666;font-size:0.72rem;text-transform:uppercase;
+                  letter-spacing:1px;margin-bottom:4px;">Location</div>
+      <div id="m-location" style="color:#ccc;"></div>
+    </div>
+
+    <div id="m-img-wrap" style="margin-bottom:16px;display:none;">
+      <div style="color:#666;font-size:0.72rem;text-transform:uppercase;
+                  letter-spacing:1px;margin-bottom:8px;">Image</div>
+      <img id="m-img" src="" alt="Site Image"
+           style="width:100%;border-radius:10px;max-height:220px;
+                  object-fit:cover;border:1px solid rgba(240,165,0,0.2);">
+    </div>
+
+    <button onclick="closeModal()"
+      style="width:100%;padding:12px;background:rgba(255,255,255,0.05);
+             border:1px solid rgba(255,255,255,0.1);border-radius:10px;
+             color:#888;font-weight:600;cursor:pointer;margin-top:8px;
+             transition:all 0.2s;"
+      onmouseover="this.style.borderColor='#f0a500';this.style.color='#f0a500'"
+      onmouseout="this.style.borderColor='rgba(255,255,255,0.1)';this.style.color='#888'">
+      Close
+    </button>
+  </div>
+</div>
+
+<script>
+  const pendingData = {{ pending_map | tojson }};
+
+  function openModal(contributionId) {
+    const d = pendingData[contributionId];
+    if (!d) return;
+
+    document.getElementById('m-name').textContent    = d.site_name    || '—';
+    document.getElementById('m-unesco').textContent  = d.unesco       || '—';
+    document.getElementById('m-period').textContent  = d.period       || '—';
+    document.getElementById('m-by').textContent      = d.submitted_by || '—';
+    document.getElementById('m-desc').textContent    = d.description  || '—';
+    document.getElementById('m-location').textContent =
+      [d.area, d.city, d.district, d.state, d.pincode]
+      .filter(Boolean).join(', ') || '—';
+
+    const imgWrap = document.getElementById('m-img-wrap');
+    const img     = document.getElementById('m-img');
+    if (d.image_url) {
+      img.src = d.image_url;
+      imgWrap.style.display = 'block';
+    } else {
+      imgWrap.style.display = 'none';
+    }
+
+    const modal = document.getElementById('site-modal');
+    modal.style.display = 'flex';
+  }
+
+  function closeModal() {
+    document.getElementById('site-modal').style.display = 'none';
+  }
+
+  document.getElementById('site-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+</script>
+
+{% endblock %}

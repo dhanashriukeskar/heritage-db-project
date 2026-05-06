@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-header text-center">
+  <div class="container">
+    <h1><i class="fas fa-user-shield me-3"></i>Admins</h1>
+    <p>Site administrator records</p>
+  </div>
+</section>
+<section class="sites-section">
+  <div class="container">
+    <div class="row g-4">
+      {% for admin in admins %}
+      <div class="col-md-4">
+        <div class="detail-card text-center">
+          <div style="width:60px;height:60px;border-radius:50%;background:#f0a500;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:1.4rem;font-weight:700;color:#0d0d1a">
+            {{ admin[1][0] }}
+          </div>
+          <h5 class="detail-subtitle">{{ admin[1] }}</h5>
+          <p class="detail-text">{{ admin[3] }}</p>
+          <div class="detail-tags justify-content-center mt-2">
+            <span class="detail-tag">{{ admin[4] }} Access</span>
+          </div>
+          <div class="location-item mt-3">
+            <span>Email</span>
+            <span style="color:#f0a500">{{ admin[2] }}</span>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

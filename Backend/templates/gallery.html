@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-header text-center">
+  <div class="container">
+    <h1><i class="fas fa-images me-3"></i>Image Gallery</h1>
+    <p>Photographs of India's heritage sites</p>
+  </div>
+</section>
+<section class="sites-section">
+  <div class="container">
+    <div class="row g-4">
+      {% for img in images %}
+      <div class="col-md-3">
+        <div class="detail-card p-2">
+          <img src="{{ img[1] }}" class="gallery-img w-100 mb-2"
+            alt="{{ img[5] }}"
+            onerror="this.src='https://images.unsplash.com/photo-1564507592333-c60657eea523?w=400'">
+          <p class="detail-text text-center mt-2" style="font-size:0.8rem">
+            {{ img[5] }}
+          </p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

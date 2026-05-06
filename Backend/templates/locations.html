@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-header text-center">
+  <div class="container">
+    <h1><i class="fas fa-map-marker-alt me-3"></i>Locations</h1>
+    <p>All heritage site locations across India</p>
+  </div>
+</section>
+<section class="sites-section">
+  <div class="container">
+    <div class="row g-4">
+      {% for loc in locations %}
+      <div class="col-md-4">
+        <div class="detail-card">
+          <h5 class="detail-subtitle">
+            <i class="fas fa-map-marker-alt me-2" style="color:#f0a500"></i>
+            {{ loc[1] }}, {{ loc[5] }}
+          </h5>
+          <div class="location-item"><span>Area</span><span>{{ loc[2] }}</span></div>
+          <div class="location-item"><span>City</span><span>{{ loc[1] }}</span></div>
+          <div class="location-item"><span>District</span><span>{{ loc[6] }}</span></div>
+          <div class="location-item"><span>State</span><span>{{ loc[5] }}</span></div>
+          <div class="location-item"><span>Pincode</span><span>{{ loc[3] }}</span></div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}
