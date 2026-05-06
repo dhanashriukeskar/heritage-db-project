@@ -9,6 +9,15 @@
 <section class="sites-section">
   <div class="container">
 
+    <!-- Stats Button -->
+    <div style="text-align:right;margin-bottom:16px;">
+      <a href="/contribution_stats"
+        style="background:#f0a500;color:#0d0d1a;padding:8px 18px;
+               border-radius:8px;font-weight:700;text-decoration:none;">
+        <i class="fas fa-chart-bar me-1"></i>View Stats & Leaderboard
+      </a>
+    </div>
+
     <div class="table-wrapper">
       <table class="heritage-table">
         <thead>
@@ -93,7 +102,7 @@
   </div>
 </section>
 
-<!-- ── Modal Overlay ───────────────────────────────────────── -->
+<!-- Modal -->
 <div id="site-modal"
      style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);
             z-index:9999;align-items:center;justify-content:center;">
@@ -104,10 +113,7 @@
 
     <button onclick="closeModal()"
       style="position:absolute;top:16px;right:20px;background:none;
-             border:none;color:#888;font-size:1.4rem;cursor:pointer;
-             transition:color 0.2s;"
-      onmouseover="this.style.color='#f0a500'"
-      onmouseout="this.style.color='#888'">✕</button>
+             border:none;color:#888;font-size:1.4rem;cursor:pointer;">✕</button>
 
     <h3 style="color:#f0a500;font-size:1.2rem;font-weight:800;margin-bottom:24px;">
       <i class="fas fa-monument me-2"></i>Pending Site Details
@@ -163,10 +169,7 @@
     <button onclick="closeModal()"
       style="width:100%;padding:12px;background:rgba(255,255,255,0.05);
              border:1px solid rgba(255,255,255,0.1);border-radius:10px;
-             color:#888;font-weight:600;cursor:pointer;margin-top:8px;
-             transition:all 0.2s;"
-      onmouseover="this.style.borderColor='#f0a500';this.style.color='#f0a500'"
-      onmouseout="this.style.borderColor='rgba(255,255,255,0.1)';this.style.color='#888'">
+             color:#888;font-weight:600;cursor:pointer;margin-top:8px;">
       Close
     </button>
   </div>
@@ -178,7 +181,6 @@
   function openModal(contributionId) {
     const d = pendingData[contributionId];
     if (!d) return;
-
     document.getElementById('m-name').textContent    = d.site_name    || '—';
     document.getElementById('m-unesco').textContent  = d.unesco       || '—';
     document.getElementById('m-period').textContent  = d.period       || '—';
@@ -187,7 +189,6 @@
     document.getElementById('m-location').textContent =
       [d.area, d.city, d.district, d.state, d.pincode]
       .filter(Boolean).join(', ') || '—';
-
     const imgWrap = document.getElementById('m-img-wrap');
     const img     = document.getElementById('m-img');
     if (d.image_url) {
@@ -196,9 +197,7 @@
     } else {
       imgWrap.style.display = 'none';
     }
-
-    const modal = document.getElementById('site-modal');
-    modal.style.display = 'flex';
+    document.getElementById('site-modal').style.display = 'flex';
   }
 
   function closeModal() {
@@ -209,5 +208,4 @@
     if (e.target === this) closeModal();
   });
 </script>
-
 {% endblock %}

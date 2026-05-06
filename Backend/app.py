@@ -111,7 +111,6 @@ def send_verification_email(to_email, verify_link, name):
 # ── Decorators ────────────────────────────────────────────────
 
 def login_required(f):
-    """Visitor login required — used only for Contribute."""
     @wraps(f)
     def decorated(*args, **kwargs):
         if 'user_id' not in session:
@@ -120,11 +119,6 @@ def login_required(f):
     return decorated
 
 def admin_required(f):
-    """
-    Logged-out users   → redirect to /admin/login
-    Logged-in visitors → show 403 access-denied page
-    Logged-in admins   → proceed normally
-    """
     @wraps(f)
     def decorated(*args, **kwargs):
         if 'user_id' not in session:
@@ -346,7 +340,7 @@ def reset_password(token):
     cur.close()
     return render_template("reset_password.html", token=token, role=role)
 
-# ── Home — PUBLIC ─────────────────────────────────────────────
+# ── Home ──────────────────────────────────────────────────────
 
 @app.route("/")
 def home():
@@ -379,12 +373,18 @@ def home():
         gallery_count=gallery_count
     )
 
-# ── Sites — PUBLIC ────────────────────────────────────────────
+# ── Sites with Filters ────────────────────────────────────────
 
 @app.route("/sites")
 def sites():
     cur = mysql.connection.cursor()
-    cur.execute("""
+
+    search = request.args.get('search', '').strip()
+    state  = request.args.get('state', '').strip()
+    unesco = request.args.get('unesco', '').strip()
+    period = request.args.get('period', '').strip()
+
+    query = """
         SELECT h.Site_ID, h.Site_Name, h.Description,
                h.Historical_Period, h.UNESCO_Status,
                l.city, l.state, i.Image_Url,
@@ -394,15 +394,51 @@ def sites():
         LEFT JOIN Location l ON h.Location_ID = l.Location_ID
         LEFT JOIN Image_Gallery i ON h.Site_ID = i.Site_ID
         LEFT JOIN Review r ON h.Site_ID = r.Site_ID
+        WHERE 1=1
+    """
+    params = []
+
+    if search:
+        query += " AND (h.Site_Name LIKE %s OR l.city LIKE %s OR l.state LIKE %s)"
+        params += [f'%{search}%', f'%{search}%', f'%{search}%']
+    if state:
+        query += " AND l.state = %s"
+        params.append(state)
+    if unesco:
+        query += " AND h.UNESCO_Status = %s"
+        params.append(unesco)
+    if period:
+        query += " AND h.Historical_Period LIKE %s"
+        params.append(f'%{period}%')
+
+    query += """
         GROUP BY h.Site_ID, h.Site_Name, h.Description,
                  h.Historical_Period, h.UNESCO_Status,
                  l.city, l.state, i.Image_Url
-    """)
-    sites = cur.fetchall()
-    cur.close()
-    return render_template("sites.html", sites=sites)
+    """
 
-# ── Site Detail — PUBLIC ──────────────────────────────────────
+    cur.execute(query, params)
+    sites = cur.fetchall()
+
+    cur.execute("SELECT DISTINCT state FROM Location ORDER BY state")
+    states = [row[0] for row in cur.fetchall()]
+
+    cur.execute(
+        "SELECT DISTINCT UNESCO_Status FROM Heritage_Site ORDER BY UNESCO_Status")
+    unesco_list = [row[0] for row in cur.fetchall()]
+
+    cur.close()
+    return render_template("sites.html",
+        sites=sites,
+        states=states,
+        unesco_list=unesco_list,
+        selected_state=state,
+        selected_unesco=unesco,
+        selected_period=period,
+        search=search
+    )
+
+# ── Site Detail ───────────────────────────────────────────────
 
 @app.route("/site/<int:site_id>")
 def site_detail(site_id):
@@ -433,7 +469,7 @@ def site_detail(site_id):
         site=site, architecture=architecture,
         images=images, reviews=reviews)
 
-# ── Submit Review — PUBLIC ────────────────────────────────────
+# ── Submit Review ─────────────────────────────────────────────
 
 @app.route("/submit_review/<int:site_id>", methods=["POST"])
 def submit_review(site_id):
@@ -463,7 +499,7 @@ def submit_review(site_id):
     cur.close()
     return redirect(url_for('site_detail', site_id=site_id))
 
-# ── Contribute — VISITOR LOGIN REQUIRED ──────────────────────
+# ── Contribute ────────────────────────────────────────────────
 
 @app.route("/contribute", methods=["GET", "POST"])
 @login_required
@@ -519,7 +555,7 @@ def contribute():
 
     return render_template("contribute.html")
 
-# ── Contribute Info — PUBLIC ──────────────────────────────────
+# ── Contribute Info ───────────────────────────────────────────
 
 @app.route("/contribute_info/<int:site_id>", methods=["POST"])
 def contribute_info(site_id):
@@ -549,7 +585,7 @@ def contribute_info(site_id):
     cur.close()
     return redirect(url_for('site_detail', site_id=site_id))
 
-# ── Locations — PUBLIC ────────────────────────────────────────
+# ── Locations ─────────────────────────────────────────────────
 
 @app.route("/locations")
 def locations():
@@ -559,7 +595,7 @@ def locations():
     cur.close()
     return render_template("locations.html", locations=locations)
 
-# ── Architecture — PUBLIC ─────────────────────────────────────
+# ── Architecture ──────────────────────────────────────────────
 
 @app.route("/architecture")
 def architecture():
@@ -583,7 +619,7 @@ def visitors():
     cur.close()
     return render_template("visitors.html", visitors=visitors)
 
-# ── Reviews — PUBLIC ──────────────────────────────────────────
+# ── Reviews ───────────────────────────────────────────────────
 
 @app.route("/reviews")
 def reviews():
@@ -649,7 +685,55 @@ def contributions():
         contributions=contributions,
         pending_map=pending_map)
 
-# ── Gallery — PUBLIC ──────────────────────────────────────────
+# ── Contribution Stats — ADMIN ONLY ──────────────────────────
+
+@app.route("/contribution_stats")
+@admin_required
+def contribution_stats():
+    cur = mysql.connection.cursor()
+
+    # Top contributors overall
+    cur.execute("""
+        SELECT v.FirstName, v.LastName, COUNT(c.Contribution_ID) as total
+        FROM Contribution c
+        LEFT JOIN Visitors v ON c.Visitor_ID = v.Visitor_ID
+        GROUP BY c.Visitor_ID, v.FirstName, v.LastName
+        ORDER BY total DESC
+        LIMIT 10
+    """)
+    top_contributors = cur.fetchall()
+
+    # Active person of current month
+    cur.execute("""
+        SELECT v.FirstName, v.LastName, COUNT(c.Contribution_ID) as total
+        FROM Contribution c
+        LEFT JOIN Visitors v ON c.Visitor_ID = v.Visitor_ID
+        WHERE MONTH(c.date_submitted) = MONTH(CURDATE())
+        AND YEAR(c.date_submitted) = YEAR(CURDATE())
+        GROUP BY c.Visitor_ID, v.FirstName, v.LastName
+        ORDER BY total DESC
+        LIMIT 1
+    """)
+    active_person = cur.fetchone()
+
+    # Month wise contribution count
+    cur.execute("""
+        SELECT MONTHNAME(MIN(date_submitted)) as month,
+               YEAR(date_submitted) as year,
+               COUNT(*) as total
+        FROM Contribution
+        GROUP BY YEAR(date_submitted), MONTH(date_submitted)
+        ORDER BY YEAR(date_submitted) DESC, MONTH(date_submitted) DESC
+    """)
+    monthly_stats = cur.fetchall()
+
+    cur.close()
+    return render_template("contribution_stats.html",
+        top_contributors=top_contributors,
+        active_person=active_person,
+        monthly_stats=monthly_stats)
+
+# ── Gallery ───────────────────────────────────────────────────
 
 @app.route("/gallery")
 def gallery():
@@ -722,7 +806,8 @@ def approve_contribution(contribution_id):
         mysql.connection.commit()
 
         cur.execute(
-            "DELETE FROM pending_sites WHERE Contribution_ID = %s", (contribution_id,))
+            "DELETE FROM pending_sites WHERE Contribution_ID = %s",
+            (contribution_id,))
         mysql.connection.commit()
 
     else:
@@ -762,7 +847,8 @@ def reject_contribution(contribution_id):
 
     if pending:
         cur.execute(
-            "DELETE FROM pending_sites WHERE Contribution_ID = %s", (contribution_id,))
+            "DELETE FROM pending_sites WHERE Contribution_ID = %s",
+            (contribution_id,))
         mysql.connection.commit()
         cur.execute("""
             UPDATE Contribution
@@ -780,7 +866,8 @@ def reject_contribution(contribution_id):
             site_id = result[0]
             cur.execute("""
                 UPDATE Contribution
-                SET Status = 'Rejected', Contribution_date = CURDATE(), Site_ID = NULL
+                SET Status = 'Rejected', Contribution_date = CURDATE(),
+                    Site_ID = NULL
                 WHERE Contribution_ID = %s
             """, (contribution_id,))
             mysql.connection.commit()
@@ -788,7 +875,8 @@ def reject_contribution(contribution_id):
                 "DELETE FROM Image_Gallery WHERE Site_ID = %s", (site_id,))
             mysql.connection.commit()
             cur.execute(
-                "SELECT Location_ID FROM Heritage_Site WHERE Site_ID = %s", (site_id,))
+                "SELECT Location_ID FROM Heritage_Site WHERE Site_ID = %s",
+                (site_id,))
             loc = cur.fetchone()
             cur.execute(
                 "DELETE FROM Heritage_Site WHERE Site_ID = %s", (site_id,))

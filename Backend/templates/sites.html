@@ -10,17 +10,89 @@
 
 <section class="sites-section">
   <div class="container">
-    <div class="search-bar-wrapper mb-5">
-      <div class="input-group search-group">
-        <span class="input-group-text search-icon">
-          <i class="fas fa-search"></i>
-        </span>
-        <input type="text" class="form-control search-input"
-          placeholder="Search heritage sites by name or location..."
-          id="searchInput" onkeyup="filterSites()">
-      </div>
-    </div>
 
+    <!-- Filter Bar -->
+    <form method="GET" action="/sites" class="mb-5">
+      <div style="background:#1a1a2e;border:1px solid rgba(240,165,0,0.2);
+                  border-radius:16px;padding:24px;margin-bottom:32px;">
+        <h6 style="color:#f0a500;margin-bottom:16px;font-weight:700;">
+          <i class="fas fa-filter me-2"></i>Filter & Search
+        </h6>
+        <div class="row g-3">
+
+          <!-- Search -->
+          <div class="col-md-4">
+            <input type="text" name="search"
+              value="{{ search }}"
+              class="form-control"
+              placeholder="Search by name or city..."
+              style="background:#0d0d1a;border:1px solid rgba(255,255,255,0.1);
+                     color:#fff;border-radius:10px;padding:10px 16px;">
+          </div>
+
+          <!-- Filter by State -->
+          <div class="col-md-3">
+            <select name="state" class="form-control"
+              style="background:#0d0d1a;border:1px solid rgba(255,255,255,0.1);
+                     color:#fff;border-radius:10px;padding:10px 16px;">
+              <option value="">All States</option>
+              {% for s in states %}
+              <option value="{{ s }}"
+                {% if s == selected_state %}selected{% endif %}>
+                {{ s }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Filter by UNESCO -->
+          <div class="col-md-3">
+            <select name="unesco" class="form-control"
+              style="background:#0d0d1a;border:1px solid rgba(255,255,255,0.1);
+                     color:#fff;border-radius:10px;padding:10px 16px;">
+              <option value="">All UNESCO Status</option>
+              {% for u in unesco_list %}
+              <option value="{{ u }}"
+                {% if u == selected_unesco %}selected{% endif %}>
+                {{ u }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Search Button -->
+          <div class="col-md-2">
+            <button type="submit"
+              style="background:#f0a500;color:#0d0d1a;border:none;
+                     padding:10px 20px;border-radius:10px;font-weight:700;
+                     width:100%;cursor:pointer;">
+              <i class="fas fa-search me-1"></i>Search
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Clear Filters -->
+        {% if search or selected_state or selected_unesco %}
+        <div class="mt-3">
+          <a href="/sites"
+            style="color:#888;font-size:0.85rem;text-decoration:none;">
+            <i class="fas fa-times me-1"></i>Clear all filters
+          </a>
+        </div>
+        {% endif %}
+
+        <!-- Results Count -->
+        <div class="mt-2">
+          <small style="color:#666;">
+            Showing {{ sites|length }} site(s)
+          </small>
+        </div>
+
+      </div>
+    </form>
+
+    <!-- Sites Grid -->
     <div class="row g-4" id="sitesGrid">
       {% for site in sites %}
       <div class="col-md-4 site-item">
@@ -47,18 +119,16 @@
         </div>
       </div>
       {% endfor %}
+
+      {% if sites|length == 0 %}
+      <div class="text-center" style="padding:60px;color:#666;">
+        <i class="fas fa-search" style="font-size:3rem;margin-bottom:16px;display:block;"></i>
+        <p>No heritage sites found for your search!</p>
+        <a href="/sites" style="color:#f0a500;">Clear filters</a>
+      </div>
+      {% endif %}
+
     </div>
   </div>
 </section>
-
-<script>
-function filterSites() {
-  const input = document.getElementById('searchInput').value.toLowerCase();
-  const items = document.querySelectorAll('.site-item');
-  items.forEach(item => {
-    const text = item.innerText.toLowerCase();
-    item.style.display = text.includes(input) ? '' : 'none';
-  });
-}
-</script>
 {% endblock %}

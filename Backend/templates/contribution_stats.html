@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="page-header text-center">
+  <div class="container">
+    <h1><i class="fas fa-chart-bar me-3"></i>Contribution Stats</h1>
+    <p>Track contributor activity and monthly trends</p>
+  </div>
+</section>
+
+<section class="sites-section">
+  <div class="container">
+
+    <!-- Active Person of Month -->
+    {% if active_person %}
+    <div style="background:linear-gradient(135deg,#f0a500,#e67e22);
+                border-radius:16px;padding:28px;margin-bottom:32px;
+                text-align:center;">
+      <i class="fas fa-trophy"
+         style="font-size:2.5rem;color:#0d0d1a;margin-bottom:12px;display:block;"></i>
+      <h4 style="color:#0d0d1a;font-weight:800;margin-bottom:4px;">
+        🏆 Active Contributor of the Month
+      </h4>
+      <h2 style="color:#0d0d1a;font-weight:900;margin-bottom:4px;">
+        {{ active_person[0] }} {{ active_person[1] }}
+      </h2>
+      <p style="color:#0d0d1a;font-size:1.1rem;margin:0;">
+        {{ active_person[2] }} contribution(s) this month!
+      </p>
+    </div>
+    {% else %}
+    <div style="background:#1a1a2e;border:1px solid rgba(240,165,0,0.2);
+                border-radius:16px;padding:28px;margin-bottom:32px;
+                text-align:center;">
+      <p style="color:#666;margin:0;">No contributions this month yet!</p>
+    </div>
+    {% endif %}
+
+    <div class="row g-4">
+
+      <!-- Top Contributors -->
+      <div class="col-md-6">
+        <div style="background:#1a1a2e;border:1px solid rgba(240,165,0,0.2);
+                    border-radius:16px;padding:24px;">
+          <h5 style="color:#f0a500;font-weight:700;margin-bottom:20px;">
+            <i class="fas fa-star me-2"></i>Top Contributors Overall
+          </h5>
+          <table class="heritage-table">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Name</th>
+                <th>Contributions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for c in top_contributors %}
+              <tr>
+                <td>
+                  {% if loop.index == 1 %}🥇
+                  {% elif loop.index == 2 %}🥈
+                  {% elif loop.index == 3 %}🥉
+                  {% else %}{{ loop.index }}
+                  {% endif %}
+                </td>
+                <td>{{ c[0] }} {{ c[1] }}</td>
+                <td>
+                  <span style="background:#f0a500;color:#0d0d1a;
+                               padding:3px 10px;border-radius:20px;
+                               font-weight:700;">
+                    {{ c[2] }}
+                  </span>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Monthly Stats -->
+      <div class="col-md-6">
+        <div style="background:#1a1a2e;border:1px solid rgba(240,165,0,0.2);
+                    border-radius:16px;padding:24px;">
+          <h5 style="color:#f0a500;font-weight:700;margin-bottom:20px;">
+            <i class="fas fa-calendar me-2"></i>Month-wise Contributions
+          </h5>
+          <table class="heritage-table">
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th>Year</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for m in monthly_stats %}
+              <tr>
+                <td>{{ m[0] }}</td>
+                <td>{{ m[1] }}</td>
+                <td>
+                  <span style="background:rgba(240,165,0,0.15);
+                               color:#f0a500;padding:3px 10px;
+                               border-radius:20px;font-weight:700;">
+                    {{ m[2] }}
+                  </span>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Back Button -->
+    <div class="mt-4">
+      <a href="/contributions"
+        style="color:#f0a500;text-decoration:none;font-weight:600;">
+        <i class="fas fa-arrow-left me-2"></i>Back to Contributions
+      </a>
+    </div>
+
+  </div>
+</section>
+{% endblock %}
