@@ -108,6 +108,45 @@ def send_verification_email(to_email, verify_link, name):
         s.login(MAIL_EMAIL, MAIL_PASSWORD)
         s.sendmail(MAIL_EMAIL, to_email, msg.as_string())
 
+def send_otp_email(to_email, otp, name):
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = '🏛️ HeritageDB — Your OTP Code'
+    msg['From']    = MAIL_EMAIL
+    msg['To']      = to_email
+    html = f"""
+    <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;
+                background:#0d1117;color:#fff;border-radius:16px;overflow:hidden;">
+      <div style="background:#f0a500;padding:24px;text-align:center;">
+        <h1 style="margin:0;color:#000;">🏛️ HeritageDB</h1>
+        <p style="margin:4px 0 0;color:#333;font-size:0.9rem;">Heritage Management System</p>
+      </div>
+      <div style="padding:32px;">
+        <p>Hi <strong>{name}</strong>,</p>
+        <p style="color:#ccc;margin-top:8px;">
+          Use the OTP below to verify your email address.
+          This code expires in <strong>10 minutes</strong>.
+        </p>
+        <div style="text-align:center;margin:32px 0;">
+          <div style="background:#f0a500;color:#000;padding:20px 40px;
+                      border-radius:12px;display:inline-block;
+                      font-size:2.5rem;font-weight:900;letter-spacing:10px;">
+            {otp}
+          </div>
+        </div>
+        <p style="color:#555;font-size:0.8rem;">
+          If you didn't register on HeritageDB, ignore this email.
+        </p>
+      </div>
+      <div style="background:#111;padding:14px;text-align:center;
+                  color:#444;font-size:0.75rem;">
+        HeritageDB 2026 — Preserving India's Cultural Legacy
+      </div>
+    </div>"""
+    msg.attach(MIMEText(html, 'html'))
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as s:
+        s.login(MAIL_EMAIL, MAIL_PASSWORD)
+        s.sendmail(MAIL_EMAIL, to_email, msg.as_string())
+
 # ── Decorators ────────────────────────────────────────────────
 
 def login_required(f):
@@ -154,24 +193,27 @@ def login():
                     error="This email is already registered. Please sign in.",
                     active_tab="register")
             hashed = hash_password(password)
-            token  = secrets.token_urlsafe(32)
+
+            # Generate 6-digit OTP
+            otp = str(secrets.randbelow(900000) + 100000)
+            otp_expires = datetime.now() + timedelta(minutes=10)
+
             cur.execute("""
                 INSERT INTO Visitors
-                    (FirstName, LastName, Email, Password, is_verified, verify_token)
-                VALUES (%s, %s, %s, %s, 0, %s)
-            """, (firstname, lastname, email, hashed, token))
+                    (FirstName, LastName, Email, Password, is_verified, otp, otp_expires)
+                VALUES (%s, %s, %s, %s, 0, %s, %s)
+            """, (firstname, lastname, email, hashed, otp, otp_expires))
             mysql.connection.commit()
             cur.close()
-            verify_link = f"{APP_URL}/verify-email/{token}"
+
             try:
-                send_verification_email(email, verify_link, firstname)
-                return render_template("login.html",
-                    success="Registration successful! Please check your email and verify your account before logging in.",
-                    active_tab="login")
+                send_otp_email(email, otp, firstname)
+                session['otp_email'] = email
+                return redirect(url_for('verify_otp'))
             except Exception as e:
                 return render_template("login.html",
-                    error=f"Registered but could not send verification email. Error: {str(e)}",
-                    active_tab="login")
+                    error=f"Registered but could not send OTP. Error: {str(e)}",
+                    active_tab="register")
 
         elif action == 'login':
             cur.execute("""
@@ -183,7 +225,7 @@ def login():
             if user and user[2] and check_password(password, user[2]):
                 if not user[3]:
                     return render_template("login.html",
-                        error="Please verify your email first. Check your inbox for the verification link.",
+                        error="Please verify your email first. Check your inbox for the OTP.",
                         active_tab="login")
                 session['user_id']   = user[0]
                 session['user_name'] = user[1]
@@ -217,6 +259,46 @@ def verify_email(token):
     cur.close()
     return render_template("login.html",
         success="Email verified successfully! You can now log in and contribute.")
+
+
+@app.route("/verify-otp", methods=["GET", "POST"])
+def verify_otp():
+    email = session.get('otp_email')
+    if not email:
+        return redirect(url_for('login'))
+    if request.method == "POST":
+        entered_otp = request.form.get('otp', '').strip()
+        cur = mysql.connection.cursor()
+        cur.execute("""
+            SELECT Visitor_ID, FirstName, otp, otp_expires
+            FROM Visitors
+            WHERE Email = %s AND is_verified = 0
+        """, (email,))
+        visitor = cur.fetchone()
+        if not visitor:
+            cur.close()
+            return render_template("verify_otp.html",
+                error="Account not found or already verified.")
+        visitor_id, firstname, saved_otp, otp_expires = visitor
+        if datetime.now() > otp_expires:
+            cur.close()
+            return render_template("verify_otp.html",
+                error="OTP has expired. Please register again.")
+        if entered_otp != saved_otp:
+            cur.close()
+            return render_template("verify_otp.html",
+                error="Incorrect OTP. Please try again.")
+        cur.execute("""
+            UPDATE Visitors
+            SET is_verified = 1, otp = NULL, otp_expires = NULL
+            WHERE Visitor_ID = %s
+        """, (visitor_id,))
+        mysql.connection.commit()
+        cur.close()
+        session.pop('otp_email', None)
+        return render_template("login.html",
+            success="Email verified successfully! You can now log in.")
+    return render_template("verify_otp.html")
 
 
 @app.route("/logout")
@@ -692,7 +774,6 @@ def contributions():
 def contribution_stats():
     cur = mysql.connection.cursor()
 
-    # Top contributors overall
     cur.execute("""
         SELECT v.FirstName, v.LastName, COUNT(c.Contribution_ID) as total
         FROM Contribution c
@@ -703,7 +784,6 @@ def contribution_stats():
     """)
     top_contributors = cur.fetchall()
 
-    # Active person of current month
     cur.execute("""
         SELECT v.FirstName, v.LastName, COUNT(c.Contribution_ID) as total
         FROM Contribution c
@@ -716,7 +796,6 @@ def contribution_stats():
     """)
     active_person = cur.fetchone()
 
-    # Month wise contribution count
     cur.execute("""
         SELECT MONTHNAME(MIN(date_submitted)) as month,
                YEAR(date_submitted) as year,
